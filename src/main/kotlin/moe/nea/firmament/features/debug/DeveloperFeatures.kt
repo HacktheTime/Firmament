@@ -8,6 +8,7 @@ package moe.nea.firmament.features.debug
 
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
+import me.shedaniel.math.Rectangle
 import org.lwjgl.glfw.GLFW
 import kotlin.io.path.absolute
 import kotlin.io.path.exists
@@ -20,10 +21,12 @@ import net.minecraft.util.Formatting
 import moe.nea.firmament.Firmament
 import moe.nea.firmament.events.HandledScreenKeyPressedEvent
 import moe.nea.firmament.features.FirmamentFeature
+import moe.nea.firmament.features.inventory.buttons.InventoryButtonEditor
 import moe.nea.firmament.gui.config.ManagedConfig
 import moe.nea.firmament.keybindings.IKeyBinding
 import moe.nea.firmament.mixins.accessor.AccessorHandledScreen
 import moe.nea.firmament.util.MC
+import moe.nea.firmament.util.ScreenUtil
 import moe.nea.firmament.util.TimeMark
 import moe.nea.firmament.util.iterate
 import moe.nea.firmament.util.skyBlockId
@@ -64,8 +67,21 @@ object DeveloperFeatures : FirmamentFeature {
         return reloadFuture.thenCompose { client.reloadResources() }
     }
 
+    fun AccessorHandledScreen.getRectangle(): Rectangle {
+        return Rectangle(
+            getX_Firmament(),
+            getY_Firmament(),
+            getBackgroundWidth_Firmament(),
+            getBackgroundHeight_Firmament()
+        )
+    }
+
     override fun onLoad() {
         HandledScreenKeyPressedEvent.subscribe {
+            if (it.matches(IKeyBinding.ofKeyCode(GLFW.GLFW_KEY_J))) {
+                it.screen as AccessorHandledScreen
+                ScreenUtil.setScreenLater(InventoryButtonEditor(it.screen.getRectangle()))
+            }
             if (it.matches(IKeyBinding.ofKeyCode(GLFW.GLFW_KEY_K))) {
                 it.screen as AccessorHandledScreen
                 val focussedSlot = it.screen.focusedSlot_Firmament ?: return@subscribe
@@ -78,7 +94,12 @@ object DeveloperFeatures : FirmamentFeature {
                     ).setStyle(
                         Style.EMPTY.withColor(Formatting.AQUA)
                             .withClickEvent(ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, ident))
-                            .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("firmament.debug.skyblockid.copy")))
+                            .withHoverEvent(
+                                HoverEvent(
+                                    HoverEvent.Action.SHOW_TEXT,
+                                    Text.translatable("firmament.debug.skyblockid.copy")
+                                )
+                            )
                     )
                 )
             }
