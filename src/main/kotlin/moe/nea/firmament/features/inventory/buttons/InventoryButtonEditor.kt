@@ -7,11 +7,8 @@ import me.shedaniel.math.Point
 import me.shedaniel.math.Rectangle
 import org.lwjgl.glfw.GLFW
 import net.minecraft.client.gui.DrawContext
-import moe.nea.firmament.repo.ItemCache.asItemStack
-import moe.nea.firmament.repo.RepoManager
 import moe.nea.firmament.util.FragmentGuiScreen
 import moe.nea.firmament.util.MoulConfigUtils
-import moe.nea.firmament.util.SkyblockId
 
 class InventoryButtonEditor(
     val lastGuiRect: Rectangle,
@@ -40,6 +37,7 @@ class InventoryButtonEditor(
 
     override fun close() {
         InventoryButtons.DConfig.data.buttons = buttons
+        InventoryButtons.DConfig.markDirty()
         super.close()
     }
 
