@@ -42,7 +42,6 @@ class FirmamentReiPlugin : REIClientPlugin {
 
         val SKYBLOCK_ITEM_TYPE_ID = Identifier("firmament", "skyblockitems")
     }
-
     override fun registerTransferHandlers(registry: TransferHandlerRegistry) {
         registry.register(TransferHandler { context ->
             val screen = context.containerScreen

@@ -3,20 +3,20 @@ package moe.nea.firmament.features.inventory.buttons
 import io.github.moulberry.moulconfig.common.IItemStack
 import io.github.moulberry.moulconfig.xml.Bind
 import io.github.notenoughupdates.moulconfig.platform.ModernItemStack
-import me.shedaniel.math.Dimension
 import me.shedaniel.math.Point
 import me.shedaniel.math.Rectangle
 import org.lwjgl.glfw.GLFW
 import net.minecraft.client.gui.DrawContext
 import moe.nea.firmament.repo.ItemCache.asItemStack
 import moe.nea.firmament.repo.RepoManager
+import moe.nea.firmament.util.FragmentGuiScreen
 import moe.nea.firmament.util.MoulConfigUtils
 import moe.nea.firmament.util.SkyblockId
 
 class InventoryButtonEditor(
     val lastGuiRect: Rectangle,
 ) : FragmentGuiScreen() {
-    class Editor(val originalButton: Button) {
+    class Editor(val originalButton: InventoryButton) {
         @field:Bind
         var command: String = originalButton.command ?: ""
 
@@ -26,7 +26,7 @@ class InventoryButtonEditor(
         @Bind
         fun getItemIcon(): IItemStack {
             save()
-            return ModernItemStack.of(RepoManager.getNEUItem(SkyblockId(icon)).asItemStack(idHint = SkyblockId(icon)))
+            return ModernItemStack.of(InventoryButton.getItemForName(icon))
         }
 
         fun save() {
@@ -35,29 +35,14 @@ class InventoryButtonEditor(
         }
     }
 
-    data class Button(
-        val x: Int,
-        val y: Int,
-        val anchorRight: Boolean,
-        val anchorBottom: Boolean,
-        var icon: String?,
-        var command: String?,
-    ) {
-        fun isValid() = !icon.isNullOrBlank() && !command.isNullOrBlank()
+    val buttons: MutableList<InventoryButton> =
+        InventoryButtons.DConfig.data.buttons.map { it.copy() }.toMutableList()
 
-        fun getPosition(guiRect: Rectangle): Point {
-            return Point(
-                (if (anchorRight) guiRect.maxX else guiRect.minX) + x,
-                (if (anchorBottom) guiRect.maxY else guiRect.minY) + y,
-            )
-        }
-
-        fun getBounds(guiRect: Rectangle): Rectangle {
-            return Rectangle(getPosition(guiRect), Dimension(18, 18))
-        }
+    override fun close() {
+        InventoryButtons.DConfig.data.buttons = buttons
+        super.close()
     }
 
-    val buttons = mutableListOf<Button>()
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.fill(lastGuiRect.minX, lastGuiRect.minY, lastGuiRect.maxX, lastGuiRect.maxY, -1)
 
@@ -89,14 +74,20 @@ class InventoryButtonEditor(
             createPopup(MoulConfigUtils.loadGui("button_editor_fragment", Editor(clickedButton)), Point(mouseX, mouseY))
             return true
         }
-        if (lastGuiRect.contains(mouseX, mouseY) || lastGuiRect.contains(Point(mouseX + 18, mouseY + 18))) return true
+        if (lastGuiRect.contains(mouseX, mouseY) || lastGuiRect.contains(
+                Point(
+                    mouseX + InventoryButton.dimensions.width,
+                    mouseY + InventoryButton.dimensions.height,
+                )
+            )
+        ) return true
         val mx = mouseX.toInt()
         val my = mouseY.toInt()
         val anchorRight = mx > lastGuiRect.maxX
         val anchorBottom = my > lastGuiRect.maxY
         val offsetX = mx - if (anchorRight) lastGuiRect.maxX else lastGuiRect.minX
         val offsetY = my - if (anchorBottom) lastGuiRect.maxY else lastGuiRect.minY
-        buttons.add(Button(offsetX, offsetY, anchorRight, anchorBottom, null, null))
+        buttons.add(InventoryButton(offsetX, offsetY, anchorRight, anchorBottom, null, null))
         return true
     }
 

@@ -1,4 +1,4 @@
-package moe.nea.firmament.features.inventory.buttons
+package moe.nea.firmament.util
 
 import io.github.moulberry.moulconfig.gui.GuiContext
 import me.shedaniel.math.Dimension
@@ -7,6 +7,7 @@ import me.shedaniel.math.Rectangle
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
+import moe.nea.firmament.util.MoulConfigFragment
 
 abstract class FragmentGuiScreen(
     val dismissOnOutOfBounds: Boolean = true

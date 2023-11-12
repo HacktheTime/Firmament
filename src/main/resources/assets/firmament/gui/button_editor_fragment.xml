@@ -4,7 +4,7 @@
     <Panel>
         <Column>
             <Row>
-                <Text textAlign="CENTER" text="Icon"/>
+                <Text text="Icon"/>
                 <ItemStack value="@getItemIcon"/>
             </Row>
             <TextField value="@icon" width="180"/>

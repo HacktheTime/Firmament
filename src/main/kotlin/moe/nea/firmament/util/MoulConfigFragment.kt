@@ -1,4 +1,4 @@
-package moe.nea.firmament.features.inventory.buttons
+package moe.nea.firmament.util
 
 import io.github.moulberry.moulconfig.gui.GuiContext
 import io.github.moulberry.moulconfig.gui.GuiImmediateContext
