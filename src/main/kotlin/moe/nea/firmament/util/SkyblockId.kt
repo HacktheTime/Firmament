@@ -1,5 +1,6 @@
 /*
  * SPDX-FileCopyrightText: 2023 Linnea Gräf <nea@nea.moe>
+ * SPDX-FileCopyrightText: 2024 Linnea Gräf <nea@nea.moe>
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -30,6 +31,9 @@ import moe.nea.firmament.util.json.DashlessUUIDSerializer
 @Serializable
 value class SkyblockId(val neuItem: String) {
     val identifier get() = Identifier("skyblockitem", neuItem.lowercase().replace(";", "__").replace(":", "___"))
+    override fun toString(): String {
+        return neuItem
+    }
 
     /**
      * A bazaar stock item id, as returned by the HyPixel bazaar api endpoint.
@@ -91,12 +95,36 @@ val ItemStack.petData: HypixelPetInfo?
 val ItemStack.skyBlockId: SkyblockId?
     get() {
         return when (val id = extraAttributes.getString("id")) {
+            "" -> {
+                null
+            }
+
             "PET" -> {
                 petData?.skyblockId ?: SkyblockId.PET_NULL
             }
-            // TODO: RUNE, ENCHANTED_BOOK, PARTY_HAT_CRAB{,_ANIMATED}, ABICASE
+
+            "RUNE", "UNIQUE_RUNE" -> {
+                val runeData = extraAttributes.getCompound("runes")
+                val runeKind = runeData.keys.singleOrNull()
+                if (runeKind == null) SkyblockId("RUNE")
+                else SkyblockId("${runeKind.uppercase()}_RUNE;${runeData.getInt(runeKind)}")
+            }
+
+            "ABICASE" -> {
+                SkyblockId("ABICASE_${extraAttributes.getString("model").uppercase()}")
+            }
+
+            "ENCHANTED_BOOK" -> {
+                val enchantmentData = extraAttributes.getCompound("enchantments")
+                val enchantName = enchantmentData.keys.singleOrNull()
+                if (enchantName == null) SkyblockId("ENCHANTED_BOOK")
+                else SkyblockId("${enchantName.uppercase()};${enchantmentData.getInt(enchantName)}")
+            }
+
+            // TODO: PARTY_HAT_CRAB{,_ANIMATED,_SLOTH}
             else -> {
                 SkyblockId(id)
             }
         }
     }
+
